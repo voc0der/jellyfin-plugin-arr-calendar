@@ -1,0 +1,8 @@
+{
+  "appName": "Sonarr",
+  "instanceName": "Sonarr",
+  "version": "4.0.20.3014",
+  "urlBase": "",
+  "authentication": "external",
+  "isDocker": true
+}

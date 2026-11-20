@@ -1,0 +1,12 @@
+[
+  {
+    "category": "General",
+    "guid": "c3d840e2-b80d-4f3f-93c7-8b246d01ce0f",
+    "name": "Arr Calendar",
+    "description": "Adds a Calendar page to Jellyfin Web with upcoming episodes from Sonarr and movie releases from Radarr in one month or week view, including live download progress. With Seerr Integration installed, Calendar sits under Requests on devices with a mouse. Requires the JavaScript Injector plugin.",
+    "owner": "voc0der",
+    "overview": "Sonarr and Radarr calendars, together, inside Jellyfin",
+    "imageUrl": "https://raw.githubusercontent.com/voc0der/jellyfin-plugin-arr-calendar/main/icon.png",
+    "versions": []
+  }
+]

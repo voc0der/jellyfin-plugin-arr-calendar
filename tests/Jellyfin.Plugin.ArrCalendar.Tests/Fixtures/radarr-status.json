@@ -1,0 +1,8 @@
+{
+  "appName": "Radarr",
+  "instanceName": "Radarr",
+  "version": "7.0.3.10918",
+  "urlBase": "",
+  "authentication": "external",
+  "isDocker": true
+}

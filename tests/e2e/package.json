@@ -1,0 +1,13 @@
+{
+  "name": "arr-calendar-e2e",
+  "version": "1.0.0",
+  "description": "Drives the Calendar page in a real Jellyfin with JavaScript Injector, Seerr Integration and a stand-in Sonarr and Radarr.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

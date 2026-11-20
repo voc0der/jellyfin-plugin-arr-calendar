@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arr Calendar</title>
+</head>
+<body>
+    <div id="ArrCalendarConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+         data-require="emby-input,emby-button,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="ArrCalendarConfigForm" onsubmit="return window.ArrCalendarConfigSubmit(event, this);">
+                    <div class="verticalSection">
+                        <h2 class="sectionTitle">Arr Calendar Settings</h2>
+
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input id="chkEnabled" type="checkbox" is="emby-checkbox" />
+                                <span>Show the Calendar in Jellyfin Web</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Adds Calendar to the navigation for every signed-in user. With Seerr Integration
+                                installed, it sits under Requests on devices with a mouse, and stays its own entry on
+                                phones and tablets. Browsers pick a change up when they next reload Jellyfin.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection" style="margin-top: 1.5em;">
+                        <h2 class="sectionTitle">Sonarr</h2>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtSonarrUrl">Address</label>
+                            <input id="txtSonarrUrl" type="url" is="emby-input" placeholder="http://sonarr:8989" autocomplete="off" />
+                            <div class="fieldDescription">
+                                Sonarr as the Jellyfin server reaches it, including any URL base. Leave empty to show
+                                no episodes. HTTPS certificates are verified, except on private and loopback addresses
+                                (for example https://192.168.1.20:8989), where self-signed certificates are accepted.
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtSonarrApiKey">API key</label>
+                            <input id="txtSonarrApiKey" type="password" is="emby-input" autocomplete="new-password" spellcheck="false" />
+                            <div id="sonarrKeyNote" class="fieldDescription">From Sonarr's Settings, General.</div>
+                        </div>
+                        <div>
+                            <button id="btnTestSonarr" is="emby-button" type="button" class="raised" data-source="sonarr">
+                                <span>Test connection</span>
+                            </button>
+                            <div id="sonarrTestResult" class="fieldDescription" role="status" style="margin-top: 0.6em;"></div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection" style="margin-top: 1.5em;">
+                        <h2 class="sectionTitle">Radarr</h2>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtRadarrUrl">Address</label>
+                            <input id="txtRadarrUrl" type="url" is="emby-input" placeholder="http://radarr:7878" autocomplete="off" />
+                            <div class="fieldDescription">
+                                Radarr as the Jellyfin server reaches it, including any URL base. Leave empty to show
+                                no movies. The same certificate rule as Sonarr applies.
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtRadarrApiKey">API key</label>
+                            <input id="txtRadarrApiKey" type="password" is="emby-input" autocomplete="new-password" spellcheck="false" />
+                            <div id="radarrKeyNote" class="fieldDescription">From Radarr's Settings, General.</div>
+                        </div>
+                        <div>
+                            <button id="btnTestRadarr" is="emby-button" type="button" class="raised" data-source="radarr">
+                                <span>Test connection</span>
+                            </button>
+                            <div id="radarrTestResult" class="fieldDescription" role="status" style="margin-top: 0.6em;"></div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection" style="margin-top: 1.5em;">
+                        <h2 class="sectionTitle">Options</h2>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input id="chkIncludeUnmonitored" type="checkbox" is="emby-checkbox" />
+                                <span>Include unmonitored episodes and movies</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Off by default: the calendar shows what Sonarr and Radarr are watching for.
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <label class="inputLabel inputLabelUnfocused" for="txtTimeout">Timeout (seconds)</label>
+                            <input id="txtTimeout" type="number" is="emby-input" min="1" max="120" step="1" />
+                            <div class="fieldDescription">How long to wait for Sonarr or Radarr before showing the calendar without it.</div>
+                        </div>
+                    </div>
+
+                    <div class="verticalSection" style="margin-top: 1.5em;">
+                        <h2 class="sectionTitle">Status</h2>
+                        <div id="statusList" class="fieldDescription" style="line-height: 1.8;"></div>
+                        <div class="fieldDescription" style="margin-top: 1em;">
+                            API keys stay on the Jellyfin server; browsers only ever receive the calendar entries.
+                            A key saved here can be read back by any administrator credential. To keep it out of
+                            Jellyfin's configuration, set ARR_CALENDAR_SONARR_API_KEY_FILE or
+                            ARR_CALENDAR_RADARR_API_KEY_FILE (or the same names without _FILE) in Jellyfin's
+                            environment instead.
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2em;">
+                        <button id="btnSave" is="emby-button" type="submit" class="raised button-submit block">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+        var ArrCalendarConfig = {
+            pluginId: 'c3d840e2-b80d-4f3f-93c7-8b246d01ce0f',
+            loaded: false
+        };
+
+        function arrCalendarValue(source, pascalKey, camelKey, fallbackValue) {
+            if (source && source[pascalKey] !== undefined && source[pascalKey] !== null) {
+                return source[pascalKey];
+            }
+
+            if (source && source[camelKey] !== undefined && source[camelKey] !== null) {
+                return source[camelKey];
+            }
+
+            return fallbackValue;
+        }
+
+        function arrCalendarSetValue(config, pascalKey, camelKey, value) {
+            if (config && Object.prototype.hasOwnProperty.call(config, camelKey)
+                && !Object.prototype.hasOwnProperty.call(config, pascalKey)) {
+                config[camelKey] = value;
+                return;
+            }
+
+            config[pascalKey] = value;
+        }
+
+        function arrCalendarStatusLine(ok, text) {
+            var line = document.createElement('div');
+            var mark = document.createElement('span');
+            mark.className = 'material-icons';
+            mark.setAttribute('aria-hidden', 'true');
+            mark.style.verticalAlign = 'middle';
+            mark.style.marginRight = '0.4em';
+            mark.style.fontSize = '1.2em';
+            mark.textContent = ok === null ? 'info_outline' : (ok ? 'check_circle' : 'error_outline');
+            var label = document.createElement('span');
+            label.textContent = text;
+            line.appendChild(mark);
+            line.appendChild(label);
+            return line;
+        }
+
+        function arrCalendarLoaderText(state, detail) {
+            switch (state) {
+                case 'Registered':
+                    return [true, 'JavaScript Injector: the Calendar is registered.'];
+                case 'Disabled':
+                    return [true, 'JavaScript Injector: not used while the Calendar is switched off.'];
+                case 'InjectorMissing':
+                    return [false, 'JavaScript Injector is not installed. Install it from its plugin repository and restart Jellyfin.'];
+                case 'Failed':
+                    return [false, 'JavaScript Injector refused the Calendar: ' + (detail || 'see the Jellyfin log') + '.'];
+                default:
+                    return [false, 'JavaScript Injector: not checked yet. Restart Jellyfin if this does not change.'];
+            }
+        }
+
+        function arrCalendarSourceLine(name, source) {
+            if (!source) {
+                return null;
+            }
+
+            if (arrCalendarValue(source, 'Problem', 'problem', '')) {
+                return [false, name + ': ' + arrCalendarValue(source, 'Problem', 'problem', '')];
+            }
+
+            if (!arrCalendarValue(source, 'Configured', 'configured', false)) {
+                return [null, name + ' is not connected, so the calendar shows no ' + (name === 'Sonarr' ? 'episodes' : 'movies') + '.'];
+            }
+
+            var keySource = arrCalendarValue(source, 'ApiKeySource', 'apiKeySource', 'none');
+            return [true, name + ' is set up' + (keySource === 'environment' ? ', with its API key from the environment' : '') + '. Use Test connection to check it answers.'];
+        }
+
+        function arrCalendarRenderStatus(registration) {
+            var list = document.getElementById('statusList');
+            list.innerHTML = '';
+            if (!registration) {
+                list.appendChild(arrCalendarStatusLine(false, 'Could not read this plugin\'s status.'));
+                return;
+            }
+
+            var loader = arrCalendarLoaderText(
+                arrCalendarValue(registration, 'LoaderState', 'loaderState', ''),
+                arrCalendarValue(registration, 'LoaderDetail', 'loaderDetail', ''));
+            list.appendChild(arrCalendarStatusLine(loader[0], loader[1]));
+
+            [['Sonarr', arrCalendarValue(registration, 'Sonarr', 'sonarr', null)], ['Radarr', arrCalendarValue(registration, 'Radarr', 'radarr', null)]].forEach(function (entry) {
+                var line = arrCalendarSourceLine(entry[0], entry[1]);
+                if (line) {
+                    list.appendChild(arrCalendarStatusLine(line[0], line[1]));
+                }
+            });
+
+            list.appendChild(arrCalendarStatusLine(null, arrCalendarValue(registration, 'SeerrIntegrationActive', 'seerrIntegrationActive', false)
+                ? 'Seerr Integration is active: Calendar sits under Requests on devices with a mouse, and is its own entry on touch screens.'
+                : 'Calendar sits near the top of the navigation. With Seerr Integration installed, it moves under Requests on devices with a mouse.'));
+        }
+
+        function arrCalendarApplyKeyField(inputId, noteId, fromEnvironment, storedKey, serviceName) {
+            var input = document.getElementById(inputId);
+            var note = document.getElementById(noteId);
+            input.disabled = !!fromEnvironment;
+            input.value = fromEnvironment ? '' : (storedKey || '');
+            input.placeholder = fromEnvironment ? 'Supplied by the environment' : '';
+            note.textContent = fromEnvironment
+                ? 'Supplied by the environment, which takes precedence over anything saved here.'
+                : 'From ' + serviceName + '\'s Settings, General.';
+        }
+
+        function arrCalendarLoadStatus() {
+            return ApiClient.ajax({
+                type: 'GET',
+                url: ApiClient.getUrl('Plugins/ArrCalendar/Registration'),
+                dataType: 'json'
+            }).then(function (registration) {
+                arrCalendarRenderStatus(registration);
+            }, function () {
+                arrCalendarRenderStatus(null);
+            });
+        }
+
+        function arrCalendarErrorText(error, fallback) {
+            if (!error || typeof error.json !== 'function') {
+                return Promise.resolve(fallback);
+            }
+
+            return error.json().then(function (body) {
+                return arrCalendarValue(body, 'Message', 'message', fallback) || fallback;
+            }, function () {
+                return fallback;
+            });
+        }
+
+        function arrCalendarTest(button) {
+            var source = button.getAttribute('data-source');
+            var prefix = source === 'sonarr' ? 'Sonarr' : 'Radarr';
+            var result = document.getElementById(source + 'TestResult');
+            var keyInput = document.getElementById('txt' + prefix + 'ApiKey');
+            button.disabled = true;
+            result.textContent = 'Testing...';
+            ApiClient.ajax({
+                type: 'POST',
+                url: ApiClient.getUrl('Plugins/ArrCalendar/Test'),
+                data: JSON.stringify({
+                    source: source,
+                    url: document.getElementById('txt' + prefix + 'Url').value,
+                    apiKey: keyInput.disabled ? '' : keyInput.value
+                }),
+                contentType: 'application/json',
+                dataType: 'json'
+            }).then(function (response) {
+                var ok = !!arrCalendarValue(response, 'Ok', 'ok', false);
+                result.textContent = (ok ? '✓ ' : '✗ ') + arrCalendarValue(response, 'Message', 'message', ok ? 'Connected.' : 'The test failed.');
+            }, function (error) {
+                return arrCalendarErrorText(error, 'The test could not run. Check that you are signed in as an administrator.').then(function (text) {
+                    result.textContent = '✗ ' + text;
+                });
+            }).then(function () {
+                button.disabled = false;
+            });
+        }
+
+        document.getElementById('btnTestSonarr').addEventListener('click', function () { arrCalendarTest(this); });
+        document.getElementById('btnTestRadarr').addEventListener('click', function () { arrCalendarTest(this); });
+
+        document.getElementById('ArrCalendarConfigPage').addEventListener('pageshow', function () {
+            Dashboard.showLoadingMsg();
+            ArrCalendarConfig.loaded = false;
+            document.getElementById('btnSave').disabled = true;
+            ApiClient.getPluginConfiguration(ArrCalendarConfig.pluginId).then(function (config) {
+                document.getElementById('chkEnabled').checked = !!arrCalendarValue(config, 'Enabled', 'enabled', true);
+                document.getElementById('txtSonarrUrl').value = arrCalendarValue(config, 'SonarrUrl', 'sonarrUrl', '');
+                document.getElementById('txtRadarrUrl').value = arrCalendarValue(config, 'RadarrUrl', 'radarrUrl', '');
+                arrCalendarApplyKeyField('txtSonarrApiKey', 'sonarrKeyNote', arrCalendarValue(config, 'SonarrApiKeyFromEnvironment', 'sonarrApiKeyFromEnvironment', false), arrCalendarValue(config, 'SonarrApiKey', 'sonarrApiKey', ''), 'Sonarr');
+                arrCalendarApplyKeyField('txtRadarrApiKey', 'radarrKeyNote', arrCalendarValue(config, 'RadarrApiKeyFromEnvironment', 'radarrApiKeyFromEnvironment', false), arrCalendarValue(config, 'RadarrApiKey', 'radarrApiKey', ''), 'Radarr');
+                document.getElementById('chkIncludeUnmonitored').checked = !!arrCalendarValue(config, 'IncludeUnmonitored', 'includeUnmonitored', false);
+                document.getElementById('txtTimeout').value = arrCalendarValue(config, 'RequestTimeoutSeconds', 'requestTimeoutSeconds', 15);
+                document.getElementById('sonarrTestResult').textContent = '';
+                document.getElementById('radarrTestResult').textContent = '';
+                ArrCalendarConfig.loaded = true;
+                document.getElementById('btnSave').disabled = false;
+                return arrCalendarLoadStatus();
+            }).then(function () {
+                Dashboard.hideLoadingMsg();
+            }).catch(function () {
+                Dashboard.hideLoadingMsg();
+                Dashboard.alert('Failed to load Arr Calendar configuration.');
+            });
+        });
+
+        window.ArrCalendarConfigSubmit = function (e) {
+            if (e && typeof e.preventDefault === 'function') {
+                e.preventDefault();
+            }
+
+            // Saving before the settings loaded would write the form's empty defaults over them.
+            if (!ArrCalendarConfig.loaded) {
+                return false;
+            }
+
+            Dashboard.showLoadingMsg();
+            ApiClient.getPluginConfiguration(ArrCalendarConfig.pluginId).then(function (config) {
+                var timeout = parseInt(document.getElementById('txtTimeout').value, 10);
+                arrCalendarSetValue(config, 'Enabled', 'enabled', document.getElementById('chkEnabled').checked);
+                arrCalendarSetValue(config, 'SonarrUrl', 'sonarrUrl', document.getElementById('txtSonarrUrl').value.trim());
+                arrCalendarSetValue(config, 'RadarrUrl', 'radarrUrl', document.getElementById('txtRadarrUrl').value.trim());
+                if (!document.getElementById('txtSonarrApiKey').disabled) {
+                    arrCalendarSetValue(config, 'SonarrApiKey', 'sonarrApiKey', document.getElementById('txtSonarrApiKey').value.trim());
+                }
+
+                if (!document.getElementById('txtRadarrApiKey').disabled) {
+                    arrCalendarSetValue(config, 'RadarrApiKey', 'radarrApiKey', document.getElementById('txtRadarrApiKey').value.trim());
+                }
+
+                arrCalendarSetValue(config, 'IncludeUnmonitored', 'includeUnmonitored', document.getElementById('chkIncludeUnmonitored').checked);
+                arrCalendarSetValue(config, 'RequestTimeoutSeconds', 'requestTimeoutSeconds', timeout >= 1 && timeout <= 120 ? timeout : 15);
+                return ApiClient.updatePluginConfiguration(ArrCalendarConfig.pluginId, config).then(function (result) {
+                    Dashboard.processPluginConfigurationUpdateResult(result);
+                    return arrCalendarLoadStatus();
+                });
+            }).catch(function () {
+                Dashboard.hideLoadingMsg();
+                Dashboard.alert('Failed to save Arr Calendar configuration.');
+            });
+
+            return false;
+        };
+        </script>
+    </div>
+</body>
+</html>
