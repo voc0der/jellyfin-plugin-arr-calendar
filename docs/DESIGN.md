@@ -152,9 +152,13 @@ download progress are shown too.
 
 ## The page
 
-The page owns `#/calendar`. `view=week` switches to the week, `date=yyyy-MM-dd` picks the month or
-week to show; without either it is this month. Paging and switching views replace the history
-entry rather than adding one, so Back leaves the Calendar instead of stepping back through it.
+The page owns `#/calendar`. `view=month` or `view=week` picks the view and `date=yyyy-MM-dd` the
+month or week to show; without a date it is today's. Without a view, phones open on the week and
+everything else on the month. A phone is the compact width below, or a short touch screen, as a
+phone on its side is, so turning one keeps the view. Until a view is chosen with the toggle, which
+then stays in the address, the view follows a window resized across the compact width. Paging and
+switching views replace the history entry rather than adding one, so Back leaves the Calendar
+instead of stepping back through it.
 The page is hosted exactly as Seerr Integration's is: a `mainAnimatedPage` among Jellyfin's own,
 announced with `pagebeforeshow` and `pageshow` so the legacy header shows its title.
 

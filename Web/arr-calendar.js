@@ -36,6 +36,8 @@
     const REFRESH_MS = 60 * 1000;
     const SEERR_GRACE_MS = 4000;
     const COMPACT_QUERY = '(max-width: 50em)';
+    // A phone on its side is wider than the compact layout, but short, with a touch screen.
+    const SIDEWAYS_PHONE_QUERY = '(pointer: coarse) and (max-height: 50em)';
     const HOVER_QUERY = '(hover: hover) and (pointer: fine)';
 
     function readVersion() {
@@ -172,13 +174,14 @@
 
         const params = new URLSearchParams(queryStart === -1 ? '' : raw.slice(queryStart + 1));
         const date = parseDayKey(params.get('date'));
-        return { view: params.get('view') === 'week' ? 'week' : 'month', date: date ? dayKey(date) : null };
+        const chosen = params.get('view');
+        return { view: chosen === 'week' || chosen === 'month' ? chosen : null, date: date ? dayKey(date) : null };
     }
 
     function routeHash(route) {
         const params = new URLSearchParams();
-        if (route.view === 'week') {
-            params.set('view', 'week');
+        if (route.view === 'week' || route.view === 'month') {
+            params.set('view', route.view);
         }
 
         if (route.date) {
@@ -467,6 +470,11 @@
         ];
     }
 
+    // The view a calendar opens on: the week on a phone, the month elsewhere.
+    function defaultView(phone) {
+        return phone ? 'week' : 'month';
+    }
+
     function formatTimeLeft(eta, now) {
         if (!eta) {
             return '';
@@ -637,6 +645,7 @@
         downloadLabel: downloadLabel,
         releaseIcon: releaseIcon,
         legendStatuses: legendStatuses,
+        defaultView: defaultView,
         bucketByDay: bucketByDay,
         episodeCode: episodeCode,
         codeOf: codeOf,
@@ -1570,8 +1579,13 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         return matches(COMPACT_QUERY);
     }
 
-    function titleHtml(route, anchor, firstDay) {
-        if (route.view === 'week') {
+    // Phones open on the week either way up, so turning one keeps the view.
+    function isPhone() {
+        return isCompact() || matches(SIDEWAYS_PHONE_QUERY);
+    }
+
+    function titleHtml(shown, anchor, firstDay) {
+        if (shown === 'week') {
             const days = weekDays(anchor, firstDay);
             let text;
             try {
@@ -1598,10 +1612,12 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         const token = ++renderToken;
         const firstDay = firstDayOfWeek(locale());
         const anchor = parseDayKey(route.date) || today();
-        const range = visibleRange(route.view, anchor, firstDay);
-        const sameRange = view && view.view === route.view && dayKey(view.range.start) === dayKey(range.start);
+        // Without a chosen view, phones open on the week and wider screens on the month.
+        const shown = route.view || defaultView(isPhone());
+        const range = visibleRange(shown, anchor, firstDay);
+        const sameRange = view && view.view === shown && dayKey(view.range.start) === dayKey(range.start);
         view = {
-            view: route.view,
+            view: shown,
             anchor: anchor,
             firstDay: firstDay,
             range: range,
@@ -1610,12 +1626,12 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
             compact: isCompact()
         };
 
-        page.querySelector('.acal-title').innerHTML = titleHtml(route, anchor, firstDay);
+        page.querySelector('.acal-title').innerHTML = titleHtml(shown, anchor, firstDay);
         page.querySelectorAll('.acal-switch button').forEach(function (button) {
-            button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === route.view));
+            button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === shown));
         });
-        page.querySelector('[data-action="prev"]').setAttribute('aria-label', route.view === 'week' ? 'Previous week' : 'Previous month');
-        page.querySelector('[data-action="next"]').setAttribute('aria-label', route.view === 'week' ? 'Next week' : 'Next month');
+        page.querySelector('[data-action="prev"]').setAttribute('aria-label', shown === 'week' ? 'Previous week' : 'Previous month');
+        page.querySelector('[data-action="next"]').setAttribute('aria-label', shown === 'week' ? 'Next week' : 'Next month');
         page.classList.remove('acal-blocked');
         page.querySelector('.acal-legend').hidden = false;
         drawView(page);
@@ -2208,7 +2224,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
 
             if (target.hasAttribute('data-view')) {
                 const next = target.getAttribute('data-view');
-                if (currentRoute && next !== currentRoute.view && view) {
+                if (currentRoute && view && next !== view.view) {
                     navigate({ view: next, date: dayKey(view.anchor) });
                 }
 
@@ -2349,7 +2365,13 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         window.addEventListener('resize', function () {
             closeFlyout(true);
             const page = document.getElementById(PAGE_ID);
-            if (page && view && view.compact !== isCompact()) {
+            if (!page || !view || !currentRoute) {
+                return;
+            }
+
+            if (!currentRoute.view && defaultView(isPhone()) !== view.view) {
+                render(page, currentRoute);
+            } else if (view.compact !== isCompact()) {
                 drawView(page);
             }
         });

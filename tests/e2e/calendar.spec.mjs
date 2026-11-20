@@ -108,7 +108,7 @@ test('Calendar sits after Favorites in the Modern phone menu', async ({ browser 
     }
 });
 
-test('the month view is the default, and Week switches to the week', async ({ page }) => {
+test('a computer opens on the month, and Week switches to the week', async ({ page }) => {
     await signIn(page, stack().users.alice);
     await openCalendar(page);
     await expect(page.locator('.acal-switch [data-view="month"]')).toHaveAttribute('aria-pressed', 'true');
@@ -124,8 +124,19 @@ test('the month view is the default, and Week switches to the week', async ({ pa
     await expect(page.locator(`.acal-col.acal-today[data-day="${utcDay(0)}"]`)).toBeVisible();
 
     await page.locator('.acal-switch [data-view="month"]').click();
-    await expect(page).toHaveURL(/#\/calendar$/);
+    await expect(page).toHaveURL(/#\/calendar\?view=month$/);
     await expect(page.locator('.acal-month')).toBeVisible();
+
+    // A chosen view stays put in a narrow window, while the default follows the window's width.
+    await page.setViewportSize({ width: 412, height: 860 });
+    await expect(page.locator('.acal-month.acal-compact')).toBeVisible();
+    await openCalendar(page);
+    await expect(page.locator('.acal-switch [data-view="week"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.acal-agenda-day')).toHaveCount(7);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(page.locator('.acal-switch [data-view="month"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.acal-month:not(.acal-compact)')).toBeVisible();
+    await expect(page).toHaveURL(/#\/calendar$/);
 });
 
 test('the arrows, the arrow keys and Today page through the calendar without filling history', async ({ page }) => {
@@ -395,12 +406,21 @@ test('west of Greenwich, episodes move to the viewer\'s own evening and release 
     }
 });
 
-test('phones get a compact month with the chosen day listed underneath', async ({ browser }) => {
+test('phones open on the week, and get a compact month with the chosen day listed underneath', async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 412, height: 860 }, isMobile: true, hasTouch: true, timezoneId: 'UTC' });
     const page = await context.newPage();
     try {
         await signIn(page, stack().users.alice);
-        await openCalendar(page, `?date=${utcDay(-1)}`);
+        await openCalendar(page);
+        await expect(page.locator('.acal-switch [data-view="week"]')).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.locator('.acal-agenda-day')).toHaveCount(7);
+        await expect(page.locator('.acal-agenda-day.acal-today')).toHaveAttribute('data-day', utcDay(0));
+        await expect(page.locator('.acal-compact')).toHaveCount(0);
+        await page.locator('.acal-switch [data-view="month"]').tap();
+        await expect(page).toHaveURL(/#\/calendar\?view=month$/);
+        await expect(page.locator('.acal-month.acal-compact')).toBeVisible();
+
+        await openCalendar(page, `?view=month&date=${utcDay(-1)}`);
         await expect(page.locator('.acal-compact')).toBeVisible();
         await expect(page.locator('.acal-pill')).toHaveCount(0);
 
@@ -414,6 +434,12 @@ test('phones get a compact month with the chosen day listed underneath', async (
         await openCalendar(page, `?view=week&date=${utcDay(-1)}`);
         await expect(page.locator('.acal-agenda-day')).toHaveCount(7);
         await expect(page.locator('.acal-week')).toHaveCount(0);
+
+        // On its side the phone is wider than the compact layout, and still opens on the week.
+        await page.setViewportSize({ width: 915, height: 412 });
+        await openCalendar(page);
+        await expect(page.locator('.acal-switch [data-view="week"]')).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.locator('.acal-week .acal-col')).toHaveCount(7);
     } finally {
         await context.close();
     }

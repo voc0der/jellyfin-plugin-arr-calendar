@@ -124,21 +124,29 @@ test('first day of the week comes from the locale', () => {
     assert.equal(model.firstDayOfWeek('not a locale!'), 1);
 });
 
-test('routes: only #/calendar belongs to the page, month is the default', () => {
+test('routes: only #/calendar belongs to the page, and a view is kept only when chosen', () => {
     assert.equal(model.parseRoute('#/home'), null);
     assert.equal(model.parseRoute('#/calendarx'), null);
     assert.equal(model.parseRoute(''), null);
     assert.equal(model.parseRoute(undefined), null);
-    assert.deepEqual(plain(model.parseRoute('#/calendar')), { view: 'month', date: null });
-    assert.deepEqual(plain(model.parseRoute('#/Calendar/')), { view: 'month', date: null });
+    assert.deepEqual(plain(model.parseRoute('#/calendar')), { view: null, date: null });
+    assert.deepEqual(plain(model.parseRoute('#/Calendar/')), { view: null, date: null });
     assert.deepEqual(plain(model.parseRoute('#/calendar?view=week')), { view: 'week', date: null });
-    assert.deepEqual(plain(model.parseRoute('#/calendar?view=day&date=2026-11-19')), { view: 'month', date: '2026-11-19' });
-    assert.deepEqual(plain(model.parseRoute('#/calendar?date=2026-02-30')), { view: 'month', date: null });
-    for (const route of [{ view: 'month', date: null }, { view: 'week', date: '2026-11-16' }, { view: 'month', date: '2027-01-01' }]) {
+    assert.deepEqual(plain(model.parseRoute('#/calendar?view=month')), { view: 'month', date: null });
+    assert.deepEqual(plain(model.parseRoute('#/calendar?view=day&date=2026-11-19')), { view: null, date: '2026-11-19' });
+    assert.deepEqual(plain(model.parseRoute('#/calendar?date=2026-02-30')), { view: null, date: null });
+    for (const route of [{ view: null, date: null }, { view: 'month', date: null }, { view: 'week', date: '2026-11-16' }, { view: 'month', date: '2027-01-01' }, { view: null, date: '2027-01-01' }]) {
         assert.deepEqual(plain(model.parseRoute(model.routeHash(route))), route);
     }
 
-    assert.equal(model.routeHash({ view: 'month', date: null }), '#/calendar');
+    assert.equal(model.routeHash({ view: null, date: null }), '#/calendar');
+    assert.equal(model.routeHash({ view: 'month', date: null }), '#/calendar?view=month');
+    assert.equal(model.routeHash({ view: 'day', date: null }), '#/calendar');
+});
+
+test('without a chosen view, phones open on the week and wider screens on the month', () => {
+    assert.equal(model.defaultView(true), 'week');
+    assert.equal(model.defaultView(false), 'month');
 });
 
 test('episodes belong on the viewer\'s own day; release dates never move', () => {

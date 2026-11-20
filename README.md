@@ -40,7 +40,7 @@ A Jellyfin plugin that adds a **Calendar** page to Jellyfin Web: upcoming episod
 
 ## Features
 
-- Month and week views (month by default), with Today and arrows, the arrow keys, or a swipe to page through them
+- Month and week views (month by default on a computer, week on a phone), with Today and arrows, the arrow keys, or a swipe to page through them
 - TV and movies told apart at a glance: a screen or a clapperboard on every entry, in Sonarr blue and Radarr gold, with episode codes for TV and the release (in cinemas, digital, physical) for movies
 - Status on every entry, as in Sonarr and Radarr: downloaded, downloading, on air now, missing, upcoming
 - Live download progress from Sonarr's and Radarr's queues, as a percentage, a progress bar and the time left
