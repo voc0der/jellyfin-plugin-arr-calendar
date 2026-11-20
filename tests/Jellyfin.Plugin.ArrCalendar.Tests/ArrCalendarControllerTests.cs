@@ -190,6 +190,19 @@ public class ArrCalendarControllerTests
         Assert.DoesNotContain(SonarrKey, json, StringComparison.Ordinal);
         Assert.DoesNotContain("/tv/", json, StringComparison.Ordinal);
         Assert.Contains("\"airDateUtc\":", json, StringComparison.Ordinal);
+        Assert.Contains("\"dontSpecifyMethod\":false", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetCalendar_TellsThePageToKeepTheMethodUnsaidWhenSetTo()
+    {
+        var configuration = Configured();
+        configuration.DontSpecifyMethod = true;
+        var rig = Create(configuration);
+
+        var calendar = (await rig.Controller.GetCalendar("2026-11-01", "2026-12-05", CancellationToken.None)).Value!;
+
+        Assert.Contains("\"dontSpecifyMethod\":true", JsonSerializer.Serialize(calendar), StringComparison.Ordinal);
     }
 
     [Fact]

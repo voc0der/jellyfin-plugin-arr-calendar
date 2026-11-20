@@ -101,7 +101,8 @@ public sealed class CalendarService
             Start = start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             End = end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             Sources = results.Select(result => result.Status).ToList(),
-            Events = CalendarMapper.Sort(results.SelectMany(result => result.Events))
+            Events = CalendarMapper.Sort(results.SelectMany(result => result.Events)),
+            DontSpecifyMethod = configuration.DontSpecifyMethod
         };
     }
 

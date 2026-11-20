@@ -40,7 +40,7 @@ A Jellyfin plugin that adds a **Calendar** page to Jellyfin Web: upcoming episod
 
 ## Features
 
-- Month and week views (month by default), with Today and arrows, the arrow keys, or a swipe to page through them
+- Month and week views (month by default on a computer, week on a phone), with Today and arrows, the arrow keys, or a swipe to page through them
 - TV and movies told apart at a glance: a screen or a clapperboard on every entry, in Sonarr blue and Radarr gold, with episode codes for TV and the release (in cinemas, digital, physical) for movies
 - Status on every entry, as in Sonarr and Radarr: downloaded, downloading, on air now, missing, upcoming
 - Live download progress from Sonarr's and Radarr's queues, as a percentage, a progress bar and the time left
@@ -89,6 +89,7 @@ Open **Dashboard -> Plugins -> Arr Calendar**:
 
 - **Sonarr** and **Radarr**: each one's address as the Jellyfin server reaches it, including any URL base (for example `http://sonarr:8989`), and its API key from **Settings -> General**. Use **Test connection** to check each one; it also catches a Radarr address typed into the Sonarr fields. HTTPS certificates are verified, except on private and loopback addresses (for example `https://192.168.1.20:8989`), where self-signed certificates are accepted
 - **Include unmonitored episodes and movies**: off by default, so the calendar shows what Sonarr and Radarr are watching for
+- **Don't specify method**: the Calendar says "Ready" instead of "Downloaded" and "Pending" instead of "Downloading" everywhere, so it never mentions how titles reach your library
 - **Timeout**: how long to wait for either service before showing the calendar without it
 
 Reload Jellyfin Web, and **Calendar** appears in the navigation for every signed-in user. Leave a service's address empty to show only the other.

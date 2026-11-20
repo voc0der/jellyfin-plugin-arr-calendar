@@ -36,6 +36,8 @@
     const REFRESH_MS = 60 * 1000;
     const SEERR_GRACE_MS = 4000;
     const COMPACT_QUERY = '(max-width: 50em)';
+    // A phone on its side is wider than the compact layout, but short, with a touch screen.
+    const SIDEWAYS_PHONE_QUERY = '(pointer: coarse) and (max-height: 50em)';
     const HOVER_QUERY = '(hover: hover) and (pointer: fine)';
 
     function readVersion() {
@@ -172,13 +174,14 @@
 
         const params = new URLSearchParams(queryStart === -1 ? '' : raw.slice(queryStart + 1));
         const date = parseDayKey(params.get('date'));
-        return { view: params.get('view') === 'week' ? 'week' : 'month', date: date ? dayKey(date) : null };
+        const chosen = params.get('view');
+        return { view: chosen === 'week' || chosen === 'month' ? chosen : null, date: date ? dayKey(date) : null };
     }
 
     function routeHash(route) {
         const params = new URLSearchParams();
-        if (route.view === 'week') {
-            params.set('view', 'week');
+        if (route.view === 'week' || route.view === 'month') {
+            params.set('view', route.view);
         }
 
         if (route.date) {
@@ -403,9 +406,25 @@
         return RELEASE_LABELS[release] || 'Release';
     }
 
-    function downloadLabel(download) {
+    // The settings' "Don't specify method" (`neutral` below) keeps the Calendar from saying how
+    // titles arrive: Ready instead of Downloaded, Pending instead of Downloading or any step of
+    // it, and a plain cloud for a digital release instead of one with a download arrow.
+    function releaseIcon(release, neutral) {
+        if (release === 'digital' && neutral) {
+            return 'cloud';
+        }
+
+        return RELEASE_ICONS[release] || 'event';
+    }
+
+    function downloadLabel(download, neutral) {
         if (!download) {
             return '';
+        }
+
+        if (neutral) {
+            const step = ['queued', 'paused', 'importing', 'warning'].indexOf(download.state) !== -1;
+            return !step && typeof download.progress === 'number' ? 'Pending ' + download.progress + '%' : 'Pending';
         }
 
         switch (download.state) {
@@ -422,12 +441,12 @@
         }
     }
 
-    function statusLabel(event, status, now) {
+    function statusLabel(event, status, now, neutral) {
         switch (status) {
             case 'downloaded':
-                return 'Downloaded';
+                return neutral ? 'Ready' : 'Downloaded';
             case 'downloading':
-                return downloadLabel(event.download);
+                return downloadLabel(event.download, neutral);
             case 'airing':
                 return 'On air now';
             case 'missing':
@@ -439,6 +458,21 @@
                 return day && now >= day.getTime() ? 'Not available yet' : 'Upcoming';
             }
         }
+    }
+
+    function legendStatuses(neutral) {
+        return [
+            ['downloaded', neutral ? 'Ready' : 'Downloaded'],
+            ['downloading', neutral ? 'Pending' : 'Downloading'],
+            ['airing', 'On air'],
+            ['missing', 'Missing'],
+            ['upcoming', 'Upcoming']
+        ];
+    }
+
+    // The view a calendar opens on: the week on a phone, the month elsewhere.
+    function defaultView(phone) {
+        return phone ? 'week' : 'month';
     }
 
     function formatTimeLeft(eta, now) {
@@ -609,6 +643,9 @@
         statusOf: statusOf,
         statusLabel: statusLabel,
         downloadLabel: downloadLabel,
+        releaseIcon: releaseIcon,
+        legendStatuses: legendStatuses,
+        defaultView: defaultView,
         bucketByDay: bucketByDay,
         episodeCode: episodeCode,
         codeOf: codeOf,
@@ -642,6 +679,8 @@
     let renderToken = 0;
     let view = null;
     let refreshTimer = 0;
+    let neutralWording = false;
+    let wordingKnown = false;
 
     function currentSessionKey() {
         const client = window.ApiClient;
@@ -710,6 +749,10 @@
                 throw new ApiError(401, 'MissingJellyfinUser', '');
             }
 
+            // The newest answer decides the wording, so a range kept from before a change of the
+            // setting is drawn in the new words too.
+            neutralWording = !!(data && data.dontSpecifyMethod);
+            wordingKnown = true;
             return data || { sources: [], events: [] };
         });
         promise.catch(function () {
@@ -1409,20 +1452,34 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         return page;
     }
 
+    // The legend's words depend on the server's "Don't specify method", which arrives with the
+    // calendar, so it is drawn invisibly until then: the space is kept and no word changes on
+    // screen.
     function legendHtml() {
-        const statuses = [['downloaded', 'Downloaded'], ['downloading', 'Downloading'], ['airing', 'On air'], ['missing', 'Missing'], ['upcoming', 'Upcoming']];
-        return '<div class="acal-legend" aria-label="Legend">'
-            + '<span class="acal-legend-group">'
+        return '<div class="acal-legend" aria-label="Legend" style="visibility:hidden">' + legendInnerHtml(false) + '</div>';
+    }
+
+    function legendInnerHtml(neutral) {
+        return '<span class="acal-legend-group">'
             + '<span class="acal-legend-item" data-kind="episode"><span class="material-icons acal-glyph" aria-hidden="true">tv</span>TV</span>'
             + '<span class="acal-legend-item" data-kind="movie"><span class="material-icons acal-glyph" aria-hidden="true">movie</span>Movies</span>'
             + '</span>'
             + '<span class="acal-legend-sep" aria-hidden="true"></span>'
             + '<span class="acal-legend-group">'
-            + statuses.map(function (status) {
-                return '<span class="acal-legend-item" data-status="' + status[0] + '"><i class="acal-swatch" aria-hidden="true"></i>' + status[1] + '</span>';
+            + legendStatuses(neutral).map(function (status) {
+                return '<span class="acal-legend-item" data-status="' + status[0] + '"><i class="acal-swatch" aria-hidden="true"></i>' + escapeHtml(status[1]) + '</span>';
             }).join('')
-            + '</span>'
-            + '</div>';
+            + '</span>';
+    }
+
+    function renderLegend(page) {
+        const legend = page.querySelector('.acal-legend');
+        if (legend.getAttribute('data-neutral') !== String(neutralWording)) {
+            legend.innerHTML = legendInnerHtml(neutralWording);
+            legend.setAttribute('data-neutral', String(neutralWording));
+        }
+
+        legend.style.visibility = wordingKnown ? '' : 'hidden';
     }
 
     function showPage() {
@@ -1522,8 +1579,13 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         return matches(COMPACT_QUERY);
     }
 
-    function titleHtml(route, anchor, firstDay) {
-        if (route.view === 'week') {
+    // Phones open on the week either way up, so turning one keeps the view.
+    function isPhone() {
+        return isCompact() || matches(SIDEWAYS_PHONE_QUERY);
+    }
+
+    function titleHtml(shown, anchor, firstDay) {
+        if (shown === 'week') {
             const days = weekDays(anchor, firstDay);
             let text;
             try {
@@ -1550,10 +1612,12 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         const token = ++renderToken;
         const firstDay = firstDayOfWeek(locale());
         const anchor = parseDayKey(route.date) || today();
-        const range = visibleRange(route.view, anchor, firstDay);
-        const sameRange = view && view.view === route.view && dayKey(view.range.start) === dayKey(range.start);
+        // Without a chosen view, phones open on the week and wider screens on the month.
+        const shown = route.view || defaultView(isPhone());
+        const range = visibleRange(shown, anchor, firstDay);
+        const sameRange = view && view.view === shown && dayKey(view.range.start) === dayKey(range.start);
         view = {
-            view: route.view,
+            view: shown,
             anchor: anchor,
             firstDay: firstDay,
             range: range,
@@ -1562,12 +1626,12 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
             compact: isCompact()
         };
 
-        page.querySelector('.acal-title').innerHTML = titleHtml(route, anchor, firstDay);
+        page.querySelector('.acal-title').innerHTML = titleHtml(shown, anchor, firstDay);
         page.querySelectorAll('.acal-switch button').forEach(function (button) {
-            button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === route.view));
+            button.setAttribute('aria-pressed', String(button.getAttribute('data-view') === shown));
         });
-        page.querySelector('[data-action="prev"]').setAttribute('aria-label', route.view === 'week' ? 'Previous week' : 'Previous month');
-        page.querySelector('[data-action="next"]').setAttribute('aria-label', route.view === 'week' ? 'Next week' : 'Next month');
+        page.querySelector('[data-action="prev"]').setAttribute('aria-label', shown === 'week' ? 'Previous week' : 'Previous month');
+        page.querySelector('[data-action="next"]').setAttribute('aria-label', shown === 'week' ? 'Next week' : 'Next month');
         page.classList.remove('acal-blocked');
         page.querySelector('.acal-legend').hidden = false;
         drawView(page);
@@ -1617,6 +1681,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         const days = bucketByDay(events);
         const now = Date.now();
         view.compact = isCompact();
+        renderLegend(page);
         page.querySelector('.acal-notices').innerHTML = noticesHtml(data);
         const host = page.querySelector('.acal-view');
         if (data && allUnconfigured(data)) {
@@ -1707,7 +1772,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         const start = eventStart(event);
         parts.push(start ? formatTime(start) : (event.kind === 'movie' ? releaseLabel(event.release) : ''));
         parts.push(event.kind === 'movie' ? 'Movie' : 'TV');
-        parts.push(statusLabel(event, status, now));
+        parts.push(statusLabel(event, status, now, neutralWording));
         return parts.filter(Boolean).join(', ');
     }
 
@@ -1769,7 +1834,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
             + '<span class="acal-card-kicker"><span class="material-icons acal-glyph" aria-hidden="true">' + (movie ? 'movie' : 'tv') + '</span>' + kicker + '</span>'
             + '<span class="acal-card-title">' + escapeHtml(event.title) + '</span>'
             + (sub ? '<span class="acal-card-sub">' + escapeHtml(sub) + '</span>' : '')
-            + '<span class="acal-card-status"><i class="acal-dot" aria-hidden="true"></i>' + escapeHtml(statusLabel(event, status, now)) + '</span>'
+            + '<span class="acal-card-status"><i class="acal-dot" aria-hidden="true"></i>' + escapeHtml(statusLabel(event, status, now, neutralWording)) + '</span>'
             + meter
             + '</span>'
             + '</button>';
@@ -2018,7 +2083,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         const kicker = movie
             ? ['Movie', event.year, event.certification].filter(Boolean)
             : ['TV', event.network, event.certification].filter(Boolean);
-        const chips = ['<span class="acal-chip" data-status="' + status + '"><i class="acal-dot" aria-hidden="true"></i>' + escapeHtml(statusLabel(event, status, now)) + '</span>'];
+        const chips = ['<span class="acal-chip" data-status="' + status + '"><i class="acal-dot" aria-hidden="true"></i>' + escapeHtml(statusLabel(event, status, now, neutralWording)) + '</span>'];
         if (!movie && event.episode === 1 && typeof event.season === 'number' && event.season > 0) {
             chips.push('<span class="acal-chip">' + (event.season === 1 ? 'Series premiere' : 'Season premiere') + '</span>');
         }
@@ -2028,7 +2093,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         }
 
         if (movie && event.release) {
-            chips.push('<span class="acal-chip"><span class="material-icons" aria-hidden="true" style="font-size:1.2em">' + (RELEASE_ICONS[event.release] || 'event') + '</span>' + escapeHtml(RELEASE_CHIPS[event.release] || 'Release') + '</span>');
+            chips.push('<span class="acal-chip"><span class="material-icons" aria-hidden="true" style="font-size:1.2em">' + releaseIcon(event.release, neutralWording) + '</span>' + escapeHtml(RELEASE_CHIPS[event.release] || 'Release') + '</span>');
         }
 
         let progress = '';
@@ -2036,7 +2101,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
             const eta = event.download.eta ? new Date(event.download.eta) : null;
             const left = eta && !isNaN(eta.getTime()) ? formatTimeLeft(eta, now) : '';
             const percent = typeof event.download.progress === 'number' ? event.download.progress : 0;
-            progress = '<div class="acal-progress"><div class="acal-progress-label">' + escapeHtml([downloadLabel(event.download), left].filter(Boolean).join(' · ')) + '</div>'
+            progress = '<div class="acal-progress"><div class="acal-progress-label">' + escapeHtml([downloadLabel(event.download, neutralWording), left].filter(Boolean).join(' · ')) + '</div>'
                 + '<div class="acal-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + percent + '"><span style="width:' + percent + '%"></span></div></div>';
         }
 
@@ -2059,7 +2124,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         } else if (event.group) {
             extra = '<ul class="acal-episodes">' + event.episodes.map(function (episode) {
                 const episodeStatus = statusOf(episode, now);
-                return '<li data-status="' + episodeStatus + '"><i class="acal-dot" title="' + escapeHtml(statusLabel(episode, episodeStatus, now)) + '"></i>'
+                return '<li data-status="' + episodeStatus + '"><i class="acal-dot" title="' + escapeHtml(statusLabel(episode, episodeStatus, now, neutralWording)) + '"></i>'
                     + '<span class="acal-ep-code">' + escapeHtml(episodeCode(episode.season, episode.episode)) + '</span>'
                     + '<span class="acal-ep-title">' + escapeHtml(episode.episodeTitle || 'TBA') + '</span></li>';
             }).join('') + '</ul>';
@@ -2159,7 +2224,7 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
 
             if (target.hasAttribute('data-view')) {
                 const next = target.getAttribute('data-view');
-                if (currentRoute && next !== currentRoute.view && view) {
+                if (currentRoute && view && next !== view.view) {
                     navigate({ view: next, date: dayKey(view.anchor) });
                 }
 
@@ -2300,7 +2365,13 @@ html.arr-calendar-nested-menu .MuiDrawer-root li[${SEERR_NAV_ATTR}="menu"]:hover
         window.addEventListener('resize', function () {
             closeFlyout(true);
             const page = document.getElementById(PAGE_ID);
-            if (page && view && view.compact !== isCompact()) {
+            if (!page || !view || !currentRoute) {
+                return;
+            }
+
+            if (!currentRoute.view && defaultView(isPhone()) !== view.view) {
+                render(page, currentRoute);
+            } else if (view.compact !== isCompact()) {
                 drawView(page);
             }
         });

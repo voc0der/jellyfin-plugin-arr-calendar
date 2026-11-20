@@ -152,9 +152,13 @@ download progress are shown too.
 
 ## The page
 
-The page owns `#/calendar`. `view=week` switches to the week, `date=yyyy-MM-dd` picks the month or
-week to show; without either it is this month. Paging and switching views replace the history
-entry rather than adding one, so Back leaves the Calendar instead of stepping back through it.
+The page owns `#/calendar`. `view=month` or `view=week` picks the view and `date=yyyy-MM-dd` the
+month or week to show; without a date it is today's. Without a view, phones open on the week and
+everything else on the month. A phone is the compact width below, or a short touch screen, as a
+phone on its side is, so turning one keeps the view. Until a view is chosen with the toggle, which
+then stays in the address, the view follows a window resized across the compact width. Paging and
+switching views replace the history entry rather than adding one, so Back leaves the Calendar
+instead of stepping back through it.
 The page is hosted exactly as Seerr Integration's is: a `mainAnimatedPage` among Jellyfin's own,
 announced with `pagebeforeshow` and `pageshow` so the legacy header shows its title.
 
@@ -198,6 +202,13 @@ browser so it follows the clock while the page stays open.
 | Missing | monitored, aired, no file | monitored, available in Radarr's terms, no file |
 | Upcoming | not aired yet | not available yet |
 | Unmonitored | only shown when the setting includes them | the same |
+
+With **Don't specify method** on, the page never says how a title arrives: Downloaded reads
+Ready, and Downloading, with every step of the download client's (queued, paused, importing,
+needs attention), reads Pending, with the percentage while it moves. A digital release keeps a
+plain cloud instead of one with a download arrow. The setting comes with every calendar answer
+and the newest one decides, so ranges the page kept from before a change follow it too. The
+legend is drawn invisibly until the first answer arrives, so no word changes on screen.
 
 Downloads show their progress as a fill on month entries, a bar along the bottom of week tiles,
 and a progress bar with the time left in the details. While something is downloading the page

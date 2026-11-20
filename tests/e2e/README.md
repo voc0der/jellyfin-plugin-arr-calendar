@@ -5,9 +5,10 @@ released JavaScript Injector and Seerr Integration, next to a stand-in Sonarr an
 throwaway containers.
 
 It checks where Calendar sits in each display mode, on its own and under Seerr Integration's
-Requests entry, with a mouse and on a touch screen; the month and week views, paging, download
-progress, grouped seasons and details; time zones and phones; the settings page; and that nothing
-about Sonarr or Radarr reaches the browser.
+Requests entry, with a mouse and on a touch screen; the month and week views and which one opens;
+paging, download progress and the wording that leaves the method unsaid; grouped seasons and
+details; time zones and phones; the settings page; and that nothing about Sonarr or Radarr
+reaches the browser.
 
 ## Running
 

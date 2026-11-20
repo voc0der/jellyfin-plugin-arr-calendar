@@ -28,6 +28,14 @@ public sealed class CalendarResponse
     /// <summary>Gets or sets the episodes and releases, in time order.</summary>
     [JsonPropertyName("events")]
     public IReadOnlyList<CalendarEvent> Events { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the page says "Ready" and "Pending" instead of
+    /// "Downloaded" and "Downloading". Sent with every answer, so the page never shows one
+    /// wording and then the other.
+    /// </summary>
+    [JsonPropertyName("dontSpecifyMethod")]
+    public bool DontSpecifyMethod { get; set; }
 }
 
 /// <summary>

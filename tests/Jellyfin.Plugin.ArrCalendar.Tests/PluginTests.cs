@@ -58,6 +58,7 @@ public class PluginTests
 
         Assert.True(config.Enabled);
         Assert.False(config.IncludeUnmonitored);
+        Assert.False(config.DontSpecifyMethod);
         Assert.Equal(string.Empty, config.SonarrUrl);
         Assert.Equal(string.Empty, config.RadarrApiKey);
         Assert.Equal(TimeSpan.FromSeconds(15), config.GetRequestTimeout());
