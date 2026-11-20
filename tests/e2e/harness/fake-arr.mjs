@@ -325,7 +325,14 @@ function control(url, request, response) {
         log.length = 0;
         send(response, 200, {});
     } else if (url.pathname === '/__fail' && request.method === 'POST') {
-        failures[url.searchParams.get('service')] = url.searchParams.get('mode') ?? 'none';
+        // Only the two services' own entries, so a name like __proto__ cannot reach anything else.
+        const service = url.searchParams.get('service');
+        if (service !== 'sonarr' && service !== 'radarr') {
+            send(response, 400, { message: 'Name sonarr or radarr.' });
+            return;
+        }
+
+        failures[service] = url.searchParams.get('mode') ?? 'none';
         send(response, 200, failures);
     } else {
         send(response, 404, {});

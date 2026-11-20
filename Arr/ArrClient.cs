@@ -287,9 +287,13 @@ public sealed class ArrClient : IArrClient
 
         // Upstream bodies are never read into a message: an error page can hold anything, and
         // the API key is never echoed back.
+        if (status is >= 300 and < 400)
+        {
+            throw new ArrConfigurationException(name + " answered with a redirect. Check the address, including http or https and any URL base.");
+        }
+
         throw status switch
         {
-            >= 300 and < 400 => (Exception)new ArrConfigurationException(name + " answered with a redirect. Check the address, including http or https and any URL base."),
             401 or 403 => new ArrApiException(HttpStatusCode.Unauthorized, name + " rejected the API key."),
             404 => new ArrApiException(HttpStatusCode.NotFound, name + " has no API at this address. Check the port and any URL base."),
             _ => new ArrApiException(response.StatusCode, name + " answered HTTP " + status.ToString(CultureInfo.InvariantCulture) + ".")
