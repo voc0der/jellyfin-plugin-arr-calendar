@@ -84,6 +84,23 @@ public class CalendarServiceTests
     }
 
     [Fact]
+    public async Task GetCalendarAsync_CarriesTheWordingSettingEvenWhenTheAnswersComeFromTheCache()
+    {
+        var configuration = Both();
+        var (service, client, _, _) = Create(configuration);
+
+        Assert.False((await service.GetCalendarAsync(Start, End, CancellationToken.None)).DontSpecifyMethod);
+        var calls = client.Calls.Count;
+
+        configuration.DontSpecifyMethod = true;
+        var calendar = await service.GetCalendarAsync(Start, End, CancellationToken.None);
+
+        Assert.True(calendar.DontSpecifyMethod);
+        Assert.Equal(calls, client.Calls.Count);
+        Assert.NotEmpty(calendar.Events);
+    }
+
+    [Fact]
     public async Task GetCalendarAsync_ReportsAnUnconfiguredServiceWithoutAskingIt()
     {
         var (service, client, _, _) = Create(new PluginConfiguration { RadarrUrl = "http://radarr:7878", RadarrApiKey = RadarrKey });

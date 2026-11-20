@@ -196,6 +196,65 @@ test('downloads in progress show how far they have got', async ({ page }) => {
     await expect(cell(page, -1).locator('.acal-pill[data-status="downloading"] .acal-pill-pct')).toHaveText('62%');
 });
 
+test('"Don\'t specify method" says Ready and Pending, and nothing on the page mentions downloads', async ({ page }) => {
+    // Everything the Calendar says, as text or for assistive technology.
+    const everythingSaid = () => page.evaluate(() => {
+        const roots = [document.getElementById('arrCalendarPage')].concat(Array.from(document.querySelectorAll('.acal-layer')));
+        const said = [];
+        roots.forEach(root => {
+            said.push(root.innerText);
+            root.querySelectorAll('[aria-label], [title]').forEach(node => {
+                said.push(node.getAttribute('aria-label') || '', node.getAttribute('title') || '');
+            });
+        });
+        return said.join('\n');
+    });
+
+    await calendarSettings({ DontSpecifyMethod: true });
+    try {
+        await signIn(page, stack().users.alice);
+        await openCalendar(page, `?view=week&date=${utcDay(-1)}`);
+        const legend = page.locator('.acal-legend');
+        await expect(legend.locator('[data-status="downloaded"]')).toHaveText('Ready');
+        await expect(legend.locator('[data-status="downloading"]')).toHaveText('Pending');
+        await expect(legend).toBeVisible();
+
+        const episodeCard = column(page, -1).locator('.acal-card[data-status="downloading"]');
+        await expect(episodeCard).toContainText('Pending 62%');
+        await expect(episodeCard).toHaveAttribute('aria-label', /Pending 62%/);
+        await episodeCard.click();
+        const dialog = page.locator('.acal-dialog');
+        await expect(dialog.locator('.acal-chips [data-status="downloading"]')).toHaveText('Pending 62%');
+        await expect(dialog.locator('.acal-progress-label')).toHaveText(/^Pending 62% · about \d+ minutes left$/);
+        expect(await everythingSaid()).not.toMatch(/download/i);
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+
+        // A digital release keeps its cloud, without the download arrow.
+        await openCalendar(page, `?view=week&date=${utcDay(-2)}`);
+        await expect(column(page, -2).locator('.acal-card[data-kind="movie"][data-status="downloading"]')).toContainText('Pending 40%');
+        await column(page, -2).locator('.acal-card[data-kind="movie"]').filter({ hasText: 'Glass Harbor' }).click();
+        await expect(dialog.locator('.acal-chips .material-icons')).toHaveText(['cloud']);
+        expect(await everythingSaid()).not.toMatch(/download/i);
+        await page.keyboard.press('Escape');
+
+        await openCalendar(page, `?view=month&date=${utcDay(-1)}`);
+        await expect(cell(page, -1).locator('.acal-pill[data-status="downloading"]')).toHaveAttribute('title', /Pending 62%/);
+        await expect(page.locator('.acal-pill[data-status="downloaded"]').first()).toHaveAttribute('title', /Ready/);
+        expect(await everythingSaid()).not.toMatch(/download/i);
+    } finally {
+        await calendarSettings({ DontSpecifyMethod: false });
+    }
+
+    // Switched back, the Calendar names downloads again from its next answer, and a week it
+    // kept from before is drawn in those words too.
+    await openCalendar(page, `?view=week&date=${utcDay(14)}`);
+    await expect(page.locator('.acal-legend [data-status="downloaded"]')).toHaveText('Downloaded');
+    await openCalendar(page, `?view=week&date=${utcDay(-1)}`);
+    await expect(column(page, -1).locator('.acal-card[data-status="downloading"]')).toContainText('Downloading 62%');
+    await expect(page.locator('.acal-legend [data-status="downloading"]')).toHaveText('Downloading');
+});
+
 test('a season released at once is one entry that lists every episode', async ({ page }) => {
     await signIn(page, stack().users.alice);
     await openCalendar(page, `?view=week&date=${utcDay(2)}`);
@@ -388,14 +447,18 @@ test('the settings page tests connections and keeps what it saves', async ({ pag
     await page.locator('#txtSonarrUrl').fill('http://arr:8989');
     await page.locator('#txtSonarrApiKey').fill(SONARR_KEY);
     await page.locator('#chkIncludeUnmonitored').check({ force: true });
+    await expect(page.locator('#chkDontSpecifyMethod')).not.toBeChecked();
+    await expect(page.locator('#ArrCalendarConfigPage')).toContainText('Shows "Ready" instead of "Downloaded" and "Pending" instead of "Downloading"');
+    await page.locator('#chkDontSpecifyMethod').check({ force: true });
     await page.locator('#txtTimeout').fill('20');
     await page.locator('#btnSave').click();
     await expect.poll(async () => (await jellyfin(base, 'GET', `/Plugins/${PLUGIN_ID}/Configuration`, { token: adminToken })).RequestTimeoutSeconds).toBe(20);
     config = await jellyfin(base, 'GET', `/Plugins/${PLUGIN_ID}/Configuration`, { token: adminToken });
     expect(config.IncludeUnmonitored).toBe(true);
+    expect(config.DontSpecifyMethod).toBe(true);
     expect(config.SonarrApiKey).toBe(SONARR_KEY);
     expect(config.RadarrApiKey).toBe(RADARR_KEY);
-    await calendarSettings({ IncludeUnmonitored: false, RequestTimeoutSeconds: 15 });
+    await calendarSettings({ IncludeUnmonitored: false, DontSpecifyMethod: false, RequestTimeoutSeconds: 15 });
 });
 
 test('leaving the Calendar gives Jellyfin its page back', async ({ page }) => {

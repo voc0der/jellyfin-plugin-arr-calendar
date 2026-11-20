@@ -30,6 +30,7 @@ public class PluginConfiguration : BasePluginConfiguration
         RadarrUrl = string.Empty;
         RadarrApiKey = string.Empty;
         IncludeUnmonitored = false;
+        DontSpecifyMethod = false;
         RequestTimeoutSeconds = DefaultTimeoutSeconds;
     }
 
@@ -74,6 +75,12 @@ public class PluginConfiguration : BasePluginConfiguration
     /// Gets or sets a value indicating whether unmonitored episodes and movies are shown too.
     /// </summary>
     public bool IncludeUnmonitored { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the Calendar says "Ready" and "Pending" instead of
+    /// "Downloaded" and "Downloading", so it never names how titles arrive.
+    /// </summary>
+    public bool DontSpecifyMethod { get; set; }
 
     /// <summary>
     /// Gets or sets how long to wait for Sonarr or Radarr, in seconds.

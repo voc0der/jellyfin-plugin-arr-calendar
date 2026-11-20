@@ -83,6 +83,15 @@
                                 Off by default: the calendar shows what Sonarr and Radarr are watching for.
                             </div>
                         </div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input id="chkDontSpecifyMethod" type="checkbox" is="emby-checkbox" />
+                                <span>Don't specify method</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Shows "Ready" instead of "Downloaded" and "Pending" instead of "Downloading" throughout the Calendar, so it never mentions how titles reach your library.
+                            </div>
+                        </div>
                         <div class="inputContainer">
                             <label class="inputLabel inputLabelUnfocused" for="txtTimeout">Timeout (seconds)</label>
                             <input id="txtTimeout" type="number" is="emby-input" min="1" max="120" step="1" />
@@ -297,6 +306,7 @@
                 arrCalendarApplyKeyField('txtSonarrApiKey', 'sonarrKeyNote', arrCalendarValue(config, 'SonarrApiKeyFromEnvironment', 'sonarrApiKeyFromEnvironment', false), arrCalendarValue(config, 'SonarrApiKey', 'sonarrApiKey', ''), 'Sonarr');
                 arrCalendarApplyKeyField('txtRadarrApiKey', 'radarrKeyNote', arrCalendarValue(config, 'RadarrApiKeyFromEnvironment', 'radarrApiKeyFromEnvironment', false), arrCalendarValue(config, 'RadarrApiKey', 'radarrApiKey', ''), 'Radarr');
                 document.getElementById('chkIncludeUnmonitored').checked = !!arrCalendarValue(config, 'IncludeUnmonitored', 'includeUnmonitored', false);
+                document.getElementById('chkDontSpecifyMethod').checked = !!arrCalendarValue(config, 'DontSpecifyMethod', 'dontSpecifyMethod', false);
                 document.getElementById('txtTimeout').value = arrCalendarValue(config, 'RequestTimeoutSeconds', 'requestTimeoutSeconds', 15);
                 document.getElementById('sonarrTestResult').textContent = '';
                 document.getElementById('radarrTestResult').textContent = '';
@@ -336,6 +346,7 @@
                 }
 
                 arrCalendarSetValue(config, 'IncludeUnmonitored', 'includeUnmonitored', document.getElementById('chkIncludeUnmonitored').checked);
+                arrCalendarSetValue(config, 'DontSpecifyMethod', 'dontSpecifyMethod', document.getElementById('chkDontSpecifyMethod').checked);
                 arrCalendarSetValue(config, 'RequestTimeoutSeconds', 'requestTimeoutSeconds', timeout >= 1 && timeout <= 120 ? timeout : 15);
                 return ApiClient.updatePluginConfiguration(ArrCalendarConfig.pluginId, config).then(function (result) {
                     Dashboard.processPluginConfigurationUpdateResult(result);

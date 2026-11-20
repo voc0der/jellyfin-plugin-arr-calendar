@@ -199,6 +199,13 @@ browser so it follows the clock while the page stays open.
 | Upcoming | not aired yet | not available yet |
 | Unmonitored | only shown when the setting includes them | the same |
 
+With **Don't specify method** on, the page never says how a title arrives: Downloaded reads
+Ready, and Downloading, with every step of the download client's (queued, paused, importing,
+needs attention), reads Pending, with the percentage while it moves. A digital release keeps a
+plain cloud instead of one with a download arrow. The setting comes with every calendar answer
+and the newest one decides, so ranges the page kept from before a change follow it too. The
+legend is drawn invisibly until the first answer arrives, so no word changes on screen.
+
 Downloads show their progress as a fill on month entries, a bar along the bottom of week tiles,
 and a progress bar with the time left in the details. While something is downloading the page
 reloads every minute; otherwise it only redraws, so on air and missing move with the clock.

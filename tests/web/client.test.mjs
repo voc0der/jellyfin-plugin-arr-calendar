@@ -194,6 +194,42 @@ test('download labels say what the download client is doing', () => {
     assert.equal(model.downloadLabel(null), '');
     assert.equal(model.statusLabel(episode({ download: { progress: 62, state: 'downloading' } }), 'downloading', 0), 'Downloading 62%');
     assert.equal(model.statusLabel(episode({}), 'airing', 0), 'On air now');
+    assert.equal(model.statusLabel(episode({ hasFile: true }), 'downloaded', 0), 'Downloaded');
+});
+
+test('"Don\'t specify method" says Ready and Pending, and never how a title arrives', () => {
+    assert.equal(model.statusLabel(episode({ hasFile: true }), 'downloaded', 0, true), 'Ready');
+    assert.equal(model.statusLabel(episode({ download: { progress: 62, state: 'downloading' } }), 'downloading', 0, true), 'Pending 62%');
+    assert.equal(model.downloadLabel({ progress: 62, state: 'downloading' }, true), 'Pending 62%');
+    assert.equal(model.downloadLabel({ progress: null, state: 'downloading' }, true), 'Pending');
+    // The download client's own steps would give the method away, so they all read as Pending.
+    for (const state of ['queued', 'paused', 'importing', 'warning']) {
+        assert.equal(model.downloadLabel({ progress: 100, state: state }, true), 'Pending');
+    }
+
+    assert.equal(model.downloadLabel(null, true), '');
+    // Everything that never named the method reads the same either way.
+    assert.equal(model.statusLabel(episode({}), 'airing', 0, true), 'On air now');
+    assert.equal(model.statusLabel(episode({}), 'missing', 0, true), 'Missing');
+    assert.equal(model.statusLabel(movie({}), 'upcoming', model.parseDayKey('2026-11-19').getTime(), true), 'Upcoming');
+
+    assert.deepEqual(plain(model.legendStatuses(false).map(status => status[1])), ['Downloaded', 'Downloading', 'On air', 'Missing', 'Upcoming']);
+    assert.deepEqual(plain(model.legendStatuses(true).map(status => status[1])), ['Ready', 'Pending', 'On air', 'Missing', 'Upcoming']);
+    assert.deepEqual(plain(model.legendStatuses(true).map(status => status[0])), plain(model.legendStatuses(false).map(status => status[0])));
+
+    // A digital release's icon loses its download arrow too.
+    assert.equal(model.releaseIcon('digital', false), 'cloud_download');
+    assert.equal(model.releaseIcon('digital', true), 'cloud');
+    assert.equal(model.releaseIcon('cinema', true), 'theaters');
+    assert.equal(model.releaseIcon('physical', true), 'album');
+    assert.equal(model.releaseIcon('rumoured', true), 'event');
+
+    for (const status of ['downloaded', 'downloading', 'airing', 'missing', 'unmonitored', 'upcoming']) {
+        for (const state of ['downloading', 'queued', 'paused', 'importing', 'warning']) {
+            const text = model.statusLabel(episode({ download: { progress: 10, state: state } }), status, 0, true);
+            assert.doesNotMatch(text, /download/i);
+        }
+    }
 });
 
 test('a season released at once becomes one entry', () => {
