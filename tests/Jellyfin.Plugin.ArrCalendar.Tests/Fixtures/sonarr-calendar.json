@@ -1,0 +1,372 @@
+[
+  {
+    "seriesId": 2,
+    "tvdbId": 11898002,
+    "episodeFileId": 2,
+    "seasonNumber": 52,
+    "episodeNumber": 4,
+    "title": "Inde Navarrette / Gracie Abrams",
+    "airDate": "2026-10-31",
+    "airDateUtc": "2026-11-01T03:30:00Z",
+    "runtime": 67,
+    "overview": "Inde Navarrette hosts, and Gracie Abrams performs.",
+    "hasFile": true,
+    "monitored": true,
+    "unverifiedSceneNumbering": false,
+    "series": {
+      "title": "Saturday Night Live",
+      "sortTitle": "saturday night live",
+      "status": "continuing",
+      "ended": false,
+      "overview": "Each week, live from New York, a famous guest host appears in sketches and parodies alongside a company of up-and-coming comedians. A popular musical guest, short films, and Weekend Update - a recurring satirical newscast - form the backbone of one of the most influential and culturally significant comedy shows in history.",
+      "network": "NBC",
+      "airTime": "23:30",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/graphical/76177-g3.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/posters/76177-4.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/fanart/original/76177-24.jpg"
+        },
+        {
+          "coverType": "clearlogo",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/v4/series/76177/clearlogo/611b78c10f0ea.png"
+        }
+      ],
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "seasons": [
+        {
+          "seasonNumber": 50,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 51,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 52,
+          "monitored": true
+        }
+      ],
+      "year": 1975,
+      "path": "/tv/Saturday Night Live",
+      "qualityProfileId": 1,
+      "seasonFolder": true,
+      "monitored": true,
+      "monitorNewItems": "all",
+      "useSceneNumbering": true,
+      "runtime": 66,
+      "tvdbId": 76177,
+      "tvRageId": 5098,
+      "tvMazeId": 361,
+      "tmdbId": 1667,
+      "firstAired": "1975-10-11T00:00:00Z",
+      "lastAired": "2027-05-15T00:00:00Z",
+      "seriesType": "standard",
+      "cleanTitle": "saturdaynightlive",
+      "imdbId": "tt0072562",
+      "titleSlug": "saturday-night-live",
+      "certification": "TV-14",
+      "genres": [
+        "Comedy"
+      ],
+      "tags": [],
+      "added": "2026-11-20T00:18:27Z",
+      "ratings": {
+        "votes": 58608,
+        "value": 8.0
+      },
+      "languageProfileId": 1,
+      "id": 2
+    },
+    "id": 2280
+  },
+  {
+    "seriesId": 6,
+    "tvdbId": 12034194,
+    "episodeFileId": 14,
+    "seasonNumber": 31,
+    "episodeNumber": 123,
+    "title": "Michael Lewis",
+    "airDate": "2026-11-02",
+    "airDateUtc": "2026-11-03T04:00:00Z",
+    "runtime": 48,
+    "overview": "Jon Stewart breaks down election-week headlines as Democrat Haley Stevens backs Mike Rogers despite once calling him a “nightmare,” news outlets second-guess the polls that keep disappointing everyone, and Trump remains fixated on the reflecting pool. Stewart warns against getting swept up in predictions of a 2026 blue wave, arguing that the media’s poll obsession never really goes away. Later, author Michael Lewis joins Stewart to discuss his book Blockers: Rebels in the Deep State, an inside look at DOGE and the civil servants who resisted it. Lewis recounts standout stories, including a U.S. Institute of Peace standoff that ended with D.C. police intervention, explains how DOGE’s young operatives targeted key public servants, and shares why the experience ultimately left him optimistic.",
+    "hasFile": true,
+    "monitored": true,
+    "unverifiedSceneNumbering": false,
+    "series": {
+      "title": "The Daily Show",
+      "sortTitle": "daily show",
+      "status": "continuing",
+      "ended": false,
+      "overview": "The Daily Show's intrepid news team dives into the biggest headlines of the day, providing fearless coverage, expert analysis, and no-nonsense commentary.",
+      "network": "Comedy Central",
+      "airTime": "23:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/graphical/71256-g.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/v4/series/71256/posters/65cc5fcb2b20e.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/fanart/original/71256-14.jpg"
+        },
+        {
+          "coverType": "clearlogo",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/v4/series/71256/clearlogo/6542595923ffc.png"
+        }
+      ],
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "seasons": [
+        {
+          "seasonNumber": 29,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 30,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 31,
+          "monitored": true
+        }
+      ],
+      "year": 1996,
+      "path": "/tv/The Daily Show",
+      "qualityProfileId": 1,
+      "seasonFolder": true,
+      "monitored": true,
+      "monitorNewItems": "all",
+      "useSceneNumbering": false,
+      "runtime": 27,
+      "tvdbId": 71256,
+      "tvRageId": 5714,
+      "tvMazeId": 66198,
+      "tmdbId": 2224,
+      "firstAired": "1996-07-22T00:00:00Z",
+      "lastAired": "2026-12-10T00:00:00Z",
+      "seriesType": "daily",
+      "cleanTitle": "thedailyshow",
+      "imdbId": "tt0115147",
+      "titleSlug": "the-daily-show",
+      "certification": "TV-14",
+      "genres": [
+        "Comedy",
+        "News",
+        "Talk Show"
+      ],
+      "tags": [],
+      "added": "2026-11-20T00:18:30Z",
+      "ratings": {
+        "votes": 49988,
+        "value": 8.3
+      },
+      "languageProfileId": 1,
+      "id": 6
+    },
+    "id": 9718
+  },
+  {
+    "seriesId": 1,
+    "tvdbId": 12035043,
+    "episodeFileId": 4,
+    "seasonNumber": 38,
+    "episodeNumber": 6,
+    "title": "The Kosmic Kruiser",
+    "airDate": "2026-11-08",
+    "airDateUtc": "2026-11-09T01:00:00Z",
+    "runtime": 0,
+    "overview": "Bart and Lisa break into Krustyland's most notorious failed attraction, only to discover that it hasn't been completely abandoned.",
+    "hasFile": true,
+    "monitored": true,
+    "absoluteEpisodeNumber": 813,
+    "unverifiedSceneNumbering": false,
+    "series": {
+      "title": "The Simpsons",
+      "sortTitle": "simpsons",
+      "status": "continuing",
+      "ended": false,
+      "overview": "Set in Springfield, the average American town, the show focuses on the antics and everyday adventures of the Simpson family; Homer, Marge, Bart, Lisa and Maggie, as well as a virtual cast of thousands. Since the beginning, the series has been a pop culture icon, attracting hundreds of celebrities to guest star. The show has also made name for itself in its fearless satirical take on politics, media and American life in general.",
+      "network": "FOX",
+      "airTime": "20:00",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/graphical/71663-g13.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/posters/71663-15.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/fanart/original/71663-10.jpg"
+        },
+        {
+          "coverType": "clearlogo",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/v4/series/71663/clearlogo/611b473e14b3f.png"
+        }
+      ],
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "seasons": [
+        {
+          "seasonNumber": 36,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 37,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 38,
+          "monitored": true
+        }
+      ],
+      "year": 1989,
+      "path": "/tv/The Simpsons",
+      "qualityProfileId": 1,
+      "seasonFolder": true,
+      "monitored": true,
+      "monitorNewItems": "all",
+      "useSceneNumbering": false,
+      "runtime": 24,
+      "tvdbId": 71663,
+      "tvRageId": 6190,
+      "tvMazeId": 83,
+      "tmdbId": 456,
+      "firstAired": "1989-12-17T00:00:00Z",
+      "lastAired": "2027-01-03T00:00:00Z",
+      "seriesType": "standard",
+      "cleanTitle": "thesimpsons",
+      "imdbId": "tt0096697",
+      "titleSlug": "the-simpsons",
+      "certification": "TV-PG",
+      "genres": [
+        "Animation",
+        "Comedy"
+      ],
+      "tags": [],
+      "added": "2026-11-20T00:18:24Z",
+      "ratings": {
+        "votes": 475430,
+        "value": 8.6
+      },
+      "languageProfileId": 1,
+      "id": 1
+    },
+    "id": 881
+  },
+  {
+    "seriesId": 4,
+    "tvdbId": 12085513,
+    "episodeFileId": 0,
+    "seasonNumber": 14,
+    "episodeNumber": 30,
+    "title": "Blake Griffin, Brittany Snow",
+    "airDate": "2026-11-17",
+    "airDateUtc": "2026-11-17T05:30:00Z",
+    "runtime": 45,
+    "overview": "Seth welcomes TV host Blake Griffin and actress Brittany Snow.",
+    "hasFile": false,
+    "monitored": true,
+    "unverifiedSceneNumbering": false,
+    "series": {
+      "title": "Late Night with Seth Meyers",
+      "sortTitle": "late night with seth meyers",
+      "status": "continuing",
+      "ended": false,
+      "overview": "Beloved \"Saturday Night Live\" personality - and the longest serving \"anchor\" on the show's wildly popular \"Weekend Update\" - Seth Meyers takes over as host of NBC's \"Late Night,\" home to A-list celebrity guests, memorable comedy and the best in musical talent. Late Night with Seth Meyers is filmed at 30 Rockefeller Plaza, New York, NY.",
+      "network": "NBC",
+      "airTime": "00:30",
+      "images": [
+        {
+          "coverType": "banner",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/graphical/270262-g2.jpg"
+        },
+        {
+          "coverType": "poster",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/posters/270262-2.jpg"
+        },
+        {
+          "coverType": "fanart",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/fanart/original/270262-4.jpg"
+        },
+        {
+          "coverType": "clearlogo",
+          "remoteUrl": "https://artworks.thetvdb.com/banners/v4/series/270262/clearlogo/611be4828fad9.png"
+        }
+      ],
+      "originalLanguage": {
+        "id": 1,
+        "name": "English"
+      },
+      "seasons": [
+        {
+          "seasonNumber": 12,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 13,
+          "monitored": true
+        },
+        {
+          "seasonNumber": 14,
+          "monitored": true
+        }
+      ],
+      "year": 2014,
+      "path": "/tv/Late Night with Seth Meyers",
+      "qualityProfileId": 1,
+      "seasonFolder": true,
+      "monitored": true,
+      "monitorNewItems": "all",
+      "useSceneNumbering": false,
+      "runtime": 45,
+      "tvdbId": 270262,
+      "tvRageId": 35852,
+      "tvMazeId": 363,
+      "tmdbId": 0,
+      "firstAired": "2014-02-24T00:00:00Z",
+      "lastAired": "2026-11-25T00:00:00Z",
+      "seriesType": "daily",
+      "cleanTitle": "latenightwithsethmeyers",
+      "imdbId": "tt3513388",
+      "titleSlug": "late-night-with-seth-meyers",
+      "certification": "TV-14",
+      "genres": [
+        "Comedy",
+        "News",
+        "Talk Show"
+      ],
+      "tags": [],
+      "added": "2026-11-20T00:18:27Z",
+      "ratings": {
+        "votes": 8806,
+        "value": 6.4
+      },
+      "languageProfileId": 1,
+      "id": 4
+    },
+    "id": 4669
+  }
+]
