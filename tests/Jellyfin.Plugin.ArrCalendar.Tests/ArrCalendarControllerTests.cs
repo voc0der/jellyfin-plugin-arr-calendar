@@ -54,7 +54,8 @@ public class ArrCalendarControllerTests
         bool apiKey = false,
         ArrCalendarRateLimiter? limiter = null,
         PluginStatus? seerrStatus = null,
-        Dictionary<string, string?>? environment = null)
+        Dictionary<string, string?>? environment = null,
+        IPlugin? seerrInstance = null)
     {
         var config = configuration ?? Configured();
         PluginTestHost.WithConfiguration(config);
@@ -65,7 +66,10 @@ public class ArrCalendarControllerTests
         };
         if (seerrStatus is not null)
         {
-            plugins.Add(new LocalPlugin("/plugins/seerr-integration", true, new PluginManifest { Id = SeerrIntegrationPlugin.Id, Name = "Seerr Integration", Version = "1.0.0.2", Status = seerrStatus.Value }));
+            plugins.Add(new LocalPlugin("/plugins/seerr-integration", true, new PluginManifest { Id = SeerrIntegrationPlugin.Id, Name = "Seerr Integration", Version = "1.0.0.2", Status = seerrStatus.Value })
+            {
+                Instance = seerrInstance
+            });
         }
 
         var manager = Substitute.For<IPluginManager>();
@@ -336,6 +340,44 @@ public class ArrCalendarControllerTests
     public void GetRegistration_OnlyCountsAnActiveSeerrIntegration(PluginStatus? seerr, bool expected)
     {
         Assert.Equal(expected, Create(seerrStatus: seerr).Controller.GetRegistration().Value!.SeerrIntegrationActive);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void GetRegistration_ReadsWhetherSeerrIntegrationShowsItsRequestsPage(bool requestsPage)
+    {
+        var status = Create(seerrStatus: PluginStatus.Active, seerrInstance: SeerrLike(new SeerrLikeConfiguration { Enabled = requestsPage }))
+            .Controller.GetRegistration().Value!;
+
+        Assert.True(status.SeerrIntegrationActive);
+        Assert.Equal(requestsPage, status.SeerrIntegrationRequestsEnabled);
+    }
+
+    [Fact]
+    public void GetRegistration_LeavesTheRequestsPageUnknownWhenItCannotBeRead()
+    {
+        // No instance, settings of another shape, and an inactive plugin all read as unknown.
+        Assert.Null(Create(seerrStatus: PluginStatus.Active).Controller.GetRegistration().Value!.SeerrIntegrationRequestsEnabled);
+        Assert.Null(Create(seerrStatus: PluginStatus.Active, seerrInstance: SeerrLike(new BasePluginConfiguration())).Controller.GetRegistration().Value!.SeerrIntegrationRequestsEnabled);
+        Assert.Null(Create(seerrStatus: PluginStatus.Disabled, seerrInstance: SeerrLike(new SeerrLikeConfiguration { Enabled = true })).Controller.GetRegistration().Value!.SeerrIntegrationRequestsEnabled);
+        Assert.Null(ArrCalendarController.IsSeerrRequestsPageOn(null));
+        Assert.Null(ArrCalendarController.IsSeerrRequestsPageOn(new LocalPlugin("/plugins/x", true, new PluginManifest()) { Instance = Substitute.For<IPlugin>() }));
+    }
+
+    private static IPlugin SeerrLike(BasePluginConfiguration settings)
+    {
+        var instance = Substitute.For<IPlugin, IHasPluginConfiguration>();
+        ((IHasPluginConfiguration)instance).Configuration.Returns(settings);
+        return instance;
+    }
+
+    /// <summary>
+    /// Stands in for Seerr Integration's own configuration type, which the controller reads by name.
+    /// </summary>
+    public sealed class SeerrLikeConfiguration : BasePluginConfiguration
+    {
+        public bool Enabled { get; set; }
     }
 
     [Fact]

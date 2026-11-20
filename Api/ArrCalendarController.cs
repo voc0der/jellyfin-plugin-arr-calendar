@@ -341,16 +341,42 @@ public partial class ArrCalendarController : ControllerBase
 
         var configuration = Configuration;
         var seerr = _pluginManager.Plugins.FirstOrDefault(candidate => candidate.Id.Equals(SeerrIntegrationPlugin.Id));
+        var seerrActive = seerr is not null && seerr.IsEnabledAndSupported && seerr.Manifest.Status == PluginStatus.Active;
         return new RegistrationStatusResponse
         {
             Enabled = configuration.Enabled,
             LoaderState = _registrar.State.ToString(),
             LoaderDetail = _registrar.Detail,
             Version = BrowserScriptRegistrar.GetVersion(),
-            SeerrIntegrationActive = seerr is not null && seerr.IsEnabledAndSupported && seerr.Manifest.Status == PluginStatus.Active,
+            SeerrIntegrationActive = seerrActive,
+            SeerrIntegrationRequestsEnabled = seerrActive ? IsSeerrRequestsPageOn(seerr) : null,
             Sonarr = DescribeSource(ArrKind.Sonarr, configuration),
             Radarr = DescribeSource(ArrKind.Radarr, configuration)
         };
+    }
+
+    /// <summary>
+    /// Reads whether Seerr Integration shows its Requests page, from its own settings.
+    /// </summary>
+    /// <remarks>
+    /// Calendar only nests under Requests when there is a Requests entry, which Seerr Integration
+    /// adds only while its page is switched on. Its configuration type lives in its own assembly,
+    /// so the switch is read by name. Anything unexpected reads as unknown rather than failing the
+    /// settings page.
+    /// </remarks>
+    /// <param name="seerr">Seerr Integration's plugin record.</param>
+    /// <returns>The switch, or <c>null</c> when it cannot be read.</returns>
+    internal static bool? IsSeerrRequestsPageOn(LocalPlugin? seerr)
+    {
+        try
+        {
+            var settings = (seerr?.Instance as IHasPluginConfiguration)?.Configuration;
+            return settings?.GetType().GetProperty("Enabled")?.GetValue(settings) as bool?;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return null;
+        }
     }
 
     /// <summary>

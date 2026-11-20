@@ -367,6 +367,10 @@ test('the settings page tests connections and keeps what it saves', async ({ pag
     await expect(page.locator('#ArrCalendarConfigPage #txtSonarrUrl')).toHaveValue('http://arr:8989');
     await expect(page.locator('#statusList')).toContainText('JavaScript Injector: the Calendar is registered.');
     await expect(page.locator('#statusList')).toContainText('Sonarr is set up');
+    // Seerr Integration is installed here, but its Requests page is switched off for now.
+    const seerrLine = page.locator('#statusList > div', { hasText: 'Seerr Integration' });
+    await expect(seerrLine).toContainText('Seerr Integration\'s Requests page is switched off');
+    await expect(seerrLine.locator('.material-icons')).toHaveText('info_outline');
 
     await page.locator('#btnTestSonarr').click();
     await expect(page.locator('#sonarrTestResult')).toHaveText('✓ Connected to Sonarr 4.0.20.3014.');
@@ -538,6 +542,14 @@ test.describe('with Seerr Integration installed', () => {
         } finally {
             await legacy.close();
         }
+    });
+
+    test('the settings page checks off Seerr Integration', async ({ page }) => {
+        await signIn(page, ADMIN);
+        await page.evaluate(() => { window.location.hash = '#/configurationpage?name=Arr%20Calendar'; });
+        const seerrLine = page.locator('#ArrCalendarConfigPage #statusList > div', { hasText: 'Seerr Integration is active' });
+        await expect(seerrLine).toContainText('Calendar sits under Requests on devices with a mouse');
+        await expect(seerrLine.locator('.material-icons')).toHaveText('check_circle');
     });
 
     test('details link to the title in Requests', async ({ page }) => {

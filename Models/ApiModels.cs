@@ -106,6 +106,14 @@ public sealed class RegistrationStatusResponse
     [JsonPropertyName("seerrIntegrationActive")]
     public bool SeerrIntegrationActive { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether Seerr Integration's Requests page is switched on, when it is active and
+    /// its settings could be read.
+    /// </summary>
+    [JsonPropertyName("seerrIntegrationRequestsEnabled")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SeerrIntegrationRequestsEnabled { get; set; }
+
     /// <summary>Gets or sets Sonarr's configuration state.</summary>
     [JsonPropertyName("sonarr")]
     public SourceConfigurationStatus Sonarr { get; set; } = new();

@@ -206,9 +206,17 @@
                 }
             });
 
-            list.appendChild(arrCalendarStatusLine(null, arrCalendarValue(registration, 'SeerrIntegrationActive', 'seerrIntegrationActive', false)
-                ? 'Seerr Integration is active: Calendar sits under Requests on devices with a mouse, and is its own entry on touch screens.'
-                : 'Calendar sits near the top of the navigation. With Seerr Integration installed, it moves under Requests on devices with a mouse.'));
+            // A check when Calendar really does sit under Requests; the other two cases are a
+            // choice, not a problem, so they are information rather than an error.
+            var seerrActive = !!arrCalendarValue(registration, 'SeerrIntegrationActive', 'seerrIntegrationActive', false);
+            var requestsOn = arrCalendarValue(registration, 'SeerrIntegrationRequestsEnabled', 'seerrIntegrationRequestsEnabled', null);
+            if (seerrActive && requestsOn !== false) {
+                list.appendChild(arrCalendarStatusLine(true, 'Seerr Integration is active: Calendar sits under Requests on devices with a mouse, and is its own entry on touch screens.'));
+            } else if (seerrActive) {
+                list.appendChild(arrCalendarStatusLine(null, 'Seerr Integration\'s Requests page is switched off, so Calendar sits near the top of the navigation.'));
+            } else {
+                list.appendChild(arrCalendarStatusLine(null, 'Calendar sits near the top of the navigation. With Seerr Integration installed, it moves under Requests on devices with a mouse.'));
+            }
         }
 
         function arrCalendarApplyKeyField(inputId, noteId, fromEnvironment, storedKey, serviceName) {
